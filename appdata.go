@@ -36,7 +36,7 @@ func (a *App) DiagnoseAppData() error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	a.Infof("Broth packages: %s", brothPackages)
+	a.Infof("broth packages: %s", brothPackages)
 
 	butlerFolder := filepath.Join(brothFolder, "butler")
 	err = a.EnsureFolder(butlerFolder)
@@ -117,6 +117,11 @@ func (a *App) DiagnoseAppData() error {
 		a.Infof("Butler version: <code>%s</code>", butlerVersion)
 	}
 
+	err = a.TestButlerd(appDataFolder, butlerExecutable)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	return nil
 }
 
@@ -149,6 +154,19 @@ func (a *App) EnsureFolder(folder string) error {
 
 	if !stats.IsDir() {
 		return errors.Errorf("%s: should be a folder", folder)
+	}
+
+	return nil
+}
+
+func (a *App) EnsureFile(file string) error {
+	stats, err := os.Stat(file)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	if stats.IsDir() {
+		return errors.Errorf("%s: should be a file", file)
 	}
 
 	return nil

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/zserge/webview"
 )
@@ -18,10 +19,11 @@ type App struct {
 func main() {
 	queue := make(chan string, 20)
 	w := webview.New(webview.Settings{
-		URL:    `data:text/html,` + url.PathEscape(baseHTML),
-		Title:  "itch diagnostics",
-		Width:  1200,
-		Height: 600,
+		URL:       `data:text/html,` + url.PathEscape(baseHTML),
+		Title:     "itch diagnostics",
+		Width:     1100,
+		Height:    800,
+		Resizable: true,
 		ExternalInvokeCallback: func(w webview.WebView, payload string) {
 			queue <- payload
 		},
@@ -36,6 +38,34 @@ func main() {
 	go app.Diagnose()
 
 	app.Run()
+}
+
+type LogGroup interface {
+	Item(format string, args ...interface{}) LogGroup
+	End()
+}
+
+type logGroup struct {
+	level string
+	a     *App
+	items []string
+}
+
+func (a *App) InfoGroup() LogGroup {
+	return a.Group("info")
+}
+
+func (a *App) Group(level string) LogGroup {
+	return &logGroup{a: a, level: level, items: nil}
+}
+
+func (lg *logGroup) Item(format string, args ...interface{}) LogGroup {
+	lg.items = append(lg.items, fmt.Sprintf(format, args...))
+	return lg
+}
+
+func (lg *logGroup) End() {
+	lg.a.Logf(lg.level, "%s", strings.Join(lg.items, " — "))
 }
 
 func (a *App) Debugf(format string, args ...interface{}) {

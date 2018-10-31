@@ -12,7 +12,6 @@ import (
 )
 
 func (a *App) DiagnoseWindows() {
-	a.Debugf("Running Windows diagnostics...")
 	a.Test("Collecting OS information", a.CollectOSInfo)
 	a.Test("Collecting Security Center information", a.CollectSecurityInfo)
 	a.Test("Verifying null service", a.DiagnoseNUL)
@@ -66,9 +65,12 @@ func (a *App) CollectOSInfo() error {
 		res["Version"],
 		res["BuildNumber"],
 	)
-	a.Infof("Installed %s", res["InstallDate"])
-	a.Infof("With languages <code>%s</code>", res["MUILanguages"])
-	a.Infof("Windows directory is at <code>%s</code>", res["WindowsDirectory"])
+
+	a.InfoGroup().
+		Item("Installed %s", res["InstallDate"]).
+		Item("With languages <code>%s</code>", res["MUILanguages"]).
+		Item("Windows directory is at <code>%s</code>", res["WindowsDirectory"]).
+		End()
 
 	return nil
 }

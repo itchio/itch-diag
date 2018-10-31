@@ -5,14 +5,19 @@ const baseCSS = `
 		box-sizing: border-box;
 		font-family: Lato, sans-serif;
 		line-height: 1.4;
-		font-size: 16px;
+		font-size: 13px;
 	}
 
 	body {
 		background: #1d1c1c;
 		color: white;
-		padding: 10px 20px;
+		padding: 5px 10px;
 		overflow-y: scroll;
+	}
+
+	p {
+		margin: 0.1em 0;
+		padding: 0;
 	}
 
 	pre {
@@ -23,7 +28,7 @@ const baseCSS = `
 		font-family: "Source Code Pro", monospace;
 		overflow: auto;
 		color: white;
-		font-size: 14px;
+		font-size: 13px;
 		line-height: 1.6;
 	}
 
