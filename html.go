@@ -5,21 +5,8 @@ const baseHTML = `
 	<html>
 		<head>
 			<title>itch diagnostics</title>
-			<style>
-			* {
-				box-sizing: border-box;
-				font-family: sans-serif;
-			}
-
-			body {
-				padding: 10px 20px;
-				overflow-y: scroll;
-			}
-			
-			i {
-				font-variant: italic;
-			}
-			</style>
+			<link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet">
+			<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
 		</head>
 
 		<body>

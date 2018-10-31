@@ -1,10 +1,12 @@
 package main
 
-import "github.com/pkg/errors"
+import (
+	"runtime"
+)
 
 // Diagnose runs a battery of tests.
 func (a *App) Diagnose() {
-	a.Logf("Running diagnostics...")
+	a.Debugf("Running diagnostics...")
 
 	a.Eval(`
 		window.external.invoke(JSON.stringify({
@@ -13,8 +15,12 @@ func (a *App) Diagnose() {
 	`)
 	msg := &UserAgentMessage{}
 	a.Receive(&msg)
-	a.Logf("User-Agent is: %s", msg.UserAgent)
+	a.Infof("User-Agent is: %s", msg.UserAgent)
 
-	a.Must(errors.Errorf("Test crash please ignore. Hi twitter & mastodon friends!"))
-	a.Exit()
+	switch runtime.GOOS {
+	case "windows":
+		a.DiagnoseWindows()
+	}
+
+	a.Debugf("All done!")
 }

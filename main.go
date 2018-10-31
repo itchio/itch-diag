@@ -26,6 +26,8 @@ func main() {
 			queue <- payload
 		},
 	})
+	w.InjectCSS(baseCSS)
+
 	app := &App{
 		w:     w,
 		queue: queue,
@@ -36,8 +38,27 @@ func main() {
 	app.Run()
 }
 
-// Logf prints a line in the app view
-func (a *App) Logf(format string, args ...interface{}) {
+func (a *App) Debugf(format string, args ...interface{}) {
+	a.Logf("debug", format, args...)
+}
+
+func (a *App) Successf(format string, args ...interface{}) {
+	a.Logf("success", format, args...)
+}
+
+func (a *App) Infof(format string, args ...interface{}) {
+	a.Logf("info", format, args...)
+}
+
+func (a *App) Warnf(format string, args ...interface{}) {
+	a.Logf("warn", format, args...)
+}
+
+func (a *App) Errorf(format string, args ...interface{}) {
+	a.Logf("error", format, args...)
+}
+
+func (a *App) Logf(level string, format string, args ...interface{}) {
 	line := fmt.Sprintf(format, args...)
 	payload, err := json.Marshal(line)
 	if err != nil {
@@ -48,6 +69,7 @@ func (a *App) Logf(format string, args ...interface{}) {
 		a.w.Eval(`
 			(function () {
 				var p = document.createElement("p");
+				p.className = "level-` + level + `";
 				p.innerHTML = ` + string(payload) + `;
 				document.querySelector("#app").appendChild(p);
 			})()
@@ -82,6 +104,16 @@ func (a *App) Eval(code string) {
 	a.w.Dispatch(func() {
 		a.w.Eval(`(function() {` + code + `})()`)
 	})
+}
+
+func (a *App) Test(label string, run func() error) {
+	a.Debugf("%s...", label)
+
+	err := run()
+	if err != nil {
+		a.Warnf("While doing '%s': %+v", label, err)
+		return
+	}
 }
 
 func (a *App) Exit() {
