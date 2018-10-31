@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"time"
 
 	"github.com/itchio/httpkit/progress"
 	"github.com/pkg/errors"
@@ -69,6 +73,49 @@ func (a *App) DiagnoseAppData() error {
 		return errors.WithStack(err)
 	}
 	a.Infof("Installed files: %s", butlerChosenFiles)
+
+	butlerExecutable := filepath.Join(butlerChosenFolder, "butler")
+	if runtime.GOOS == "windows" {
+		butlerExecutable += ".exe"
+	}
+	a.Debugf("Verifying <code>%s</code>", butlerExecutable)
+
+	var timeout = 5 * time.Second
+
+	{
+		a.Debugf("Retrieving butler version...")
+		errs := make(chan error)
+		ctx, cancel := context.WithCancel(context.Background())
+		var butlerVersion string
+
+		retrieveButlerVersion := func() error {
+			out, err := exec.Command(butlerExecutable, "-V").CombinedOutput()
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			butlerVersion = strings.TrimSpace(string(out))
+			return nil
+		}
+
+		go func() {
+			timer := time.After(timeout)
+			select {
+			case <-ctx.Done():
+			case <-timer:
+				errs <- errors.Errorf("Timed out after %s", timer)
+			}
+		}()
+		go func() {
+			defer cancel()
+			errs <- retrieveButlerVersion()
+		}()
+
+		err := <-errs
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		a.Infof("Butler version: <code>%s</code>", butlerVersion)
+	}
 
 	return nil
 }
