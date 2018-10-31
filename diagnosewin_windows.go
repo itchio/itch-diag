@@ -15,7 +15,7 @@ func (a *App) DiagnoseWindows() {
 	a.Debugf("Running Windows diagnostics...")
 	a.Test("Collecting OS information", a.CollectOSInfo)
 	a.Test("Collecting Security Center information", a.CollectSecurityInfo)
-	a.Test("Making sure Null service is configured properly...", a.DiagnoseNUL)
+	a.Test("Verifying null service", a.DiagnoseNUL)
 	a.Test("Verifying installed app information", a.DiagnoseItchReg)
 }
 

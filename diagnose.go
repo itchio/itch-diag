@@ -22,5 +22,7 @@ func (a *App) Diagnose() {
 		a.DiagnoseWindows()
 	}
 
+	a.Test("Diagnosing itch app dependencies", a.DiagnoseAppData)
+
 	a.Debugf("All done!")
 }
