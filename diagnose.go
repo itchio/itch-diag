@@ -8,7 +8,7 @@ const diagnoseUserAgent = false
 
 // Diagnose runs a battery of tests.
 func (a *App) Diagnose() {
-	a.Debugf("Running diagnostics...")
+	a.Debugf("Running diagnostics (itch-diag v%s)...", ItchDiagVersion)
 
 	if diagnoseUserAgent {
 		a.Eval(`

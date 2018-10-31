@@ -114,7 +114,7 @@ func (a *App) DiagnoseAppData() error {
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		a.Infof("Butler version: <code>%s</code>", butlerVersion)
+		a.Infof("butler version: <code>%s</code>", butlerVersion)
 	}
 
 	err = a.TestButlerd(appDataFolder, butlerExecutable)

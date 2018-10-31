@@ -34,7 +34,7 @@ func (a *App) TestButlerd(appDataFolder string, butlerExecutable string) error {
 
 	cmd := exec.CommandContext(
 		ctx,
-		"butler",
+		butlerExecutable,
 		"--json",
 		"--dbpath", dbPath,
 		"daemon",

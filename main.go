@@ -16,11 +16,13 @@ type App struct {
 	queue chan string
 }
 
+const ItchDiagVersion = "0.2.0"
+
 func main() {
 	queue := make(chan string, 20)
 	w := webview.New(webview.Settings{
 		URL:       `data:text/html,` + url.PathEscape(baseHTML),
-		Title:     "itch diagnostics",
+		Title:     fmt.Sprintf("itch diagnostics v%s", ItchDiagVersion),
 		Width:     1100,
 		Height:    800,
 		Resizable: true,
