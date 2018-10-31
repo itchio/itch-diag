@@ -13,7 +13,13 @@ import (
 func (a *App) DiagnoseWindows() {
 	a.Debugf("Running Windows diagnostics...")
 	a.Test("Collecting system information with WMIC", a.DiagnoseWmic)
+	a.Test("Diagnosing NUL registry hack", a.DiagnoseNUL)
 	a.Test("Verifying installed app information", a.DiagnoseItchReg)
+}
+
+func (a *App) DiagnoseNUL() error {
+	// TODO: implement
+	return nil
 }
 
 func (a *App) DiagnoseWmic() error {
