@@ -111,7 +111,7 @@ func (a *App) Test(label string, run func() error) {
 
 	err := run()
 	if err != nil {
-		a.Warnf("While doing '%s': %+v", label, err)
+		a.Warnf("While doing '%s': <pre>%+v</pre>", label, err)
 		return
 	}
 }
