@@ -1,0 +1,56 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/itchio/ox",
+			"repository": "https://github.com/itchio/ox",
+			"vcs": "git",
+			"revision": "e1e80a5e22b02d15beacc8427dfefbc91151e20c",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/itchio/wharf/counter",
+			"repository": "https://github.com/itchio/wharf",
+			"vcs": "git",
+			"revision": "cb3536dc7f4291152d4353b7085947f7ee4787ae",
+			"branch": "master",
+			"path": "counter",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/itchio/wharf/state",
+			"repository": "https://github.com/itchio/wharf",
+			"vcs": "git",
+			"revision": "cb3536dc7f4291152d4353b7085947f7ee4787ae",
+			"branch": "master",
+			"path": "/state",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/pkg/errors",
+			"repository": "https://github.com/pkg/errors",
+			"vcs": "git",
+			"revision": "059132a15dd08d6704c67711dae0cf35ab991756",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/zserge/webview",
+			"repository": "https://github.com/zserge/webview",
+			"vcs": "git",
+			"revision": "f390a2df9ec50d1bce389f0656a215a5504dce04",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/sys/windows",
+			"repository": "https://go.googlesource.com/sys",
+			"vcs": "git",
+			"revision": "7e31e0c00fa05cb5fbf4347b585621d6709e19a4",
+			"branch": "master",
+			"path": "/windows",
+			"notests": true
+		}
+	]
+}
