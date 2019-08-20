@@ -4,16 +4,12 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
-	"io/ioutil"
-	"net/http"
+	"net"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
-	"github.com/itchio/httpkit/timeout"
 	"github.com/pkg/errors"
 )
 
@@ -31,6 +27,7 @@ func (a *App) TestButlerd(appDataFolder string, butlerExecutable string) error {
 	var secret string
 	addrErrs := make(chan error)
 	addrCtx, addrCancel := context.WithCancel(ctx)
+	defer addrCancel()
 
 	cmd := exec.CommandContext(
 		ctx,
@@ -58,9 +55,9 @@ func (a *App) TestButlerd(appDataFolder string, butlerExecutable string) error {
 		}
 
 		if typ.(string) == "butlerd/listen-notification" {
-			http := msg["http"].(map[string]interface{})
+			tcp := msg["tcp"].(map[string]interface{})
 			secret = msg["secret"].(string)
-			addr = http["address"].(string)
+			addr = tcp["address"].(string)
 			addrErrs <- nil
 			addrCancel()
 			return true
@@ -99,9 +96,17 @@ func (a *App) TestButlerd(appDataFolder string, butlerExecutable string) error {
 
 	a.Debugf("Daemon is listening on <code>%s</code>", addr)
 
+	type RPCRequest struct {
+		JSONRPC string      `json:"jsonrpc"`
+		ID      int64       `json:"id"`
+		Method  string      `json:"method"`
+		Params  interface{} `json:"params"`
+	}
+
 	type RPCReply struct {
-		ID     int64            `json:"id"`
-		Result *json.RawMessage `json:"result"`
+		ID     int64                  `json:"id"`
+		Result *json.RawMessage       `json:"result"`
+		Error  map[string]interface{} `json:"error"`
 	}
 
 	type User struct {
@@ -119,34 +124,86 @@ func (a *App) TestButlerd(appDataFolder string, butlerExecutable string) error {
 	}
 
 	var reqID int64 = 0
-	client := timeout.NewDefaultClient()
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	a.Debugf("Connected...")
 
-	testCall := func() error {
-		a.Debugf("Listing profiles...")
-		reqAddr := "http://" + addr + "/call/Profile.List"
-		reqBody := strings.NewReader("{}")
-		req, err := http.NewRequest("POST", reqAddr, reqBody)
+	sendReq := func(req RPCRequest) error {
+		reqBytes, err := json.Marshal(req)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-
 		reqID++
-		req.Header.Set("X-ID", fmt.Sprintf("%d", reqID))
-		req.Header.Set("X-Secret", secret)
 
-		res, err := client.Do(req)
+		_, err = conn.Write(reqBytes)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer res.Body.Close()
-
-		payload, err := ioutil.ReadAll(res.Body)
+		_, err = conn.Write([]byte{'\n'})
 		if err != nil {
 			return errors.WithStack(err)
+		}
+
+		return nil
+	}
+
+	readReply := func() (*RPCReply, error) {
+		s := bufio.NewScanner(conn)
+		if !s.Scan() {
+			return nil, errors.Errorf("expected to read a line from TCP socket, but didn't")
 		}
 
 		var reply RPCReply
-		err = json.Unmarshal(payload, &reply)
+		err = json.Unmarshal(s.Bytes(), &reply)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		if reply.Error != nil {
+			return nil, errors.Errorf("JSON-RPC error: %#v", reply.Error)
+		}
+
+		return &reply, nil
+	}
+
+	testCall := func() error {
+		{
+			a.Debugf("Authenticating...")
+			req := RPCRequest{
+				JSONRPC: "2.0",
+				ID:      reqID,
+				Method:  "Meta.Authenticate",
+				Params: map[string]interface{}{
+					"secret": secret,
+				},
+			}
+			reqID++
+
+			err = sendReq(req)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			_, err := readReply()
+			if err != nil {
+				return errors.WithStack(err)
+			}
+		}
+
+		a.Debugf("Listing profiles...")
+		req := RPCRequest{
+			JSONRPC: "2.0",
+			ID:      reqID,
+			Method:  "Profile.List",
+			Params:  nil,
+		}
+		err = sendReq(req)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		reply, err := readReply()
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -170,17 +227,6 @@ func (a *App) TestButlerd(appDataFolder string, butlerExecutable string) error {
 	}
 
 	return nil
-}
-
-func (a *App) formatJSON(input []byte) string {
-	inter := make(map[string]interface{})
-
-	err := json.Unmarshal(input, &inter)
-	a.Must(err)
-
-	res, err := json.MarshalIndent(inter, "", "  ")
-	a.Must(err)
-	return string(res)
 }
 
 func (a *App) relay(reader io.Reader, label string, processLine func(string) bool) {

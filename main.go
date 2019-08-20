@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/zserge/webview"
 )
 
@@ -37,7 +39,15 @@ func main() {
 		queue: queue,
 	}
 
-	go app.Diagnose()
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				app.Errorf("Recovered from panic: %#v", r)
+				app.Errorf("<pre>%+v</pre>", errors.Errorf("stack trace"))
+			}
+		}()
+		app.Diagnose()
+	}()
 
 	app.Run()
 }
@@ -97,8 +107,9 @@ func (a *App) Logf(level string, format string, args ...interface{}) {
 		panic(err)
 	}
 
+	log.Print(line)
 	a.w.Dispatch(func() {
-		a.w.Eval(`
+		err := a.w.Eval(`
 			(function () {
 				var p = document.createElement("p");
 				p.className = "level-` + level + `";
@@ -106,6 +117,9 @@ func (a *App) Logf(level string, format string, args ...interface{}) {
 				document.querySelector("#app").appendChild(p);
 			})()
 		`)
+		if err != nil {
+			panic(err)
+		}
 	})
 }
 
@@ -134,7 +148,10 @@ func (a *App) Must(err error) {
 
 func (a *App) Eval(code string) {
 	a.w.Dispatch(func() {
-		a.w.Eval(`(function() {` + code + `})()`)
+		err := a.w.Eval(`(function() {` + code + `})()`)
+		if err != nil {
+			panic(err)
+		}
 	})
 }
 

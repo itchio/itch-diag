@@ -20,8 +20,6 @@ func (a *App) DiagnoseWindows() {
 
 const nullServiceRegPath = "SYSTEM\\ControlSet001\\Services\\Null"
 
-var nullServiceFullPath = fmt.Sprintf("HKLM\\%s\\Start", nullServiceRegPath)
-
 func (a *App) DiagnoseNUL() error {
 	k, err := registry.OpenKey(registry.LOCAL_MACHINE, nullServiceRegPath, registry.READ)
 	if err != nil {

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/itchio/httpkit/progress"
+	"github.com/itchio/headway/united"
 	"github.com/pkg/errors"
 )
 
@@ -102,7 +102,7 @@ func (a *App) DiagnoseAppData() error {
 			select {
 			case <-ctx.Done():
 			case <-timer:
-				errs <- errors.Errorf("Timed out after %s", timer)
+				errs <- errors.Errorf("Timed out after %s", timeout)
 			}
 		}()
 		go func() {
@@ -133,7 +133,7 @@ func (a *App) ListFiles(folder string) (string, error) {
 
 	var names []string
 	for _, item := range items {
-		suffix := fmt.Sprintf(" (%s)", progress.FormatBytes(item.Size()))
+		suffix := fmt.Sprintf(" (%s)", united.FormatBytes(item.Size()))
 		if item.IsDir() {
 			suffix = "/"
 		}

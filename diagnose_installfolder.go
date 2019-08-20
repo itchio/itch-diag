@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/itchio/httpkit/progress"
-	"github.com/itchio/wharf/tlc"
+	"github.com/itchio/headway/united"
+	"github.com/itchio/lake/tlc"
 	"github.com/pkg/errors"
 )
 
@@ -65,7 +65,7 @@ func (a *App) DiagnoseInstallFolder(installFolder string) error {
 		return errors.WithStack(err)
 	}
 
-	a.Infof("Current version takes up <code>%s</code> in %s", progress.FormatBytes(container.Size), container.Stats())
+	a.Infof("Current version takes up <code>%s</code> in %s", united.FormatBytes(container.Size), container.Stats())
 	if container.Size == 0 {
 		a.Errorf("Install folder seems empty")
 	}
