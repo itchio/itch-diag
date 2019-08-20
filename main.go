@@ -18,7 +18,7 @@ type App struct {
 	queue chan string
 }
 
-const ItchDiagVersion = "0.2.0"
+const ItchDiagVersion = "0.3.0"
 
 func main() {
 	queue := make(chan string, 20)
